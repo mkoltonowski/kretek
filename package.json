@@ -1,0 +1,23 @@
+{
+  "name": "ggbot-PoC",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start:dev": "tsnd --transpile-only --files src/index.ts",
+    "watch:dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec npm run start:dev"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.3"
+  },
+  "private": true,
+  "dependencies": {
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0"
+  }
+}
