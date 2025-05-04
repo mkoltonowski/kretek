@@ -82,7 +82,7 @@ export class DiscordAdapter {
     oldState: VoiceState,
     newState: VoiceState,
   ) => {
-    if (oldState.channelId || !newState.channelId) {
+    if (!newState.channelId) {
       return;
     }
 
@@ -221,7 +221,6 @@ export class DiscordAdapter {
 
   public onVoiceSlur = async (text: string) => {
     if (!(await this.testContentForSlurs(text))) {
-      console.log("MSG INVALID");
       return;
     }
 
@@ -253,9 +252,6 @@ export class DiscordAdapter {
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
       .split(/\W+/); // tokenizacja słów
-
-    console.log(normalized);
-    console.log(slurs);
 
     return normalized.some((w) => slurs.has(w));
   };

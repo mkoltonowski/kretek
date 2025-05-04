@@ -13,7 +13,7 @@ export async function transcribePcm(
     `./lib/whisper.cpp/build/bin/whisper-cli${isWindows ? ".exe" : ""}`,
   );
 
-  const modelPath = path.resolve("./lib/whisper.cpp/models/ggml-small.bin");
+  const modelPath = path.resolve("./lib/whisper.cpp/models/ggml-base.bin");
 
   await new Promise<void>((resolve, reject) => {
     const cmd = `ffmpeg -f s16le -ar 48000 -ac 2 -i "${pcmPath}" "${wavPath}" -y`;
@@ -25,7 +25,7 @@ export async function transcribePcm(
     console.log(data.toString());
     onSlur(data.toString());
   });
-  p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
+  // p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
   p.on("close", (code) => {
     console.log("Whisper exited with code", code);
     deleteFile(pcmPath);
