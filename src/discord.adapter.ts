@@ -1,16 +1,11 @@
 import {
-  Channel,
   Client,
   EmbedBuilder,
   Events,
   GatewayIntentBits,
-  Interaction,
   Message,
-  MessageFlags,
-  MessageType,
   OmitPartialGroupDMChannel,
   VoiceBasedChannel,
-  VoiceChannel,
   VoiceState,
   // @ts-ignore
 } from "discord.js";
@@ -23,12 +18,7 @@ import {
   VoiceReceiver,
 } from "@discordjs/voice";
 import { OpusEncoder } from "@discordjs/opus";
-import {
-  createWriteStream,
-  appendFile,
-  existsSync,
-  writeFileSync,
-} from "node:fs";
+import { createWriteStream } from "node:fs";
 import * as path from "node:path";
 import { WhisperBridge } from "./whisper.bridge";
 
@@ -141,14 +131,13 @@ export class DiscordAdapter {
       out.end();
       await fs.copyFile(filename, processFilename);
       try {
-        const result = await this.whisperBridge.transcribe(
+        await this.whisperBridge.transcribe(
           processFilename,
           (filename: string) => {
             fs.rm(filename);
           },
           this.onVoiceSlur,
         );
-        console.log(result);
       } catch (e) {
         console.error(e);
       }
@@ -158,7 +147,6 @@ export class DiscordAdapter {
   };
 
   public onChannelLeft = (oldState: VoiceState, newState: VoiceState) => {
-    console.log(oldState?.channel?.members.size);
     if (!oldState.channelId || newState.channelId) {
       return;
     }

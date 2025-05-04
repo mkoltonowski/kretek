@@ -8,7 +8,7 @@ import * as path from "node:path";
 const execAsync = promisify(exec);
 
 export class WhisperBridge {
-  private queue: (() => Promise<void>)[] = [];
+  public queue: (() => Promise<void>)[] = [];
   private isProcessing = false;
 
   constructor(
@@ -31,23 +31,29 @@ export class WhisperBridge {
       `ffmpeg -f s16le -ar 48000 -ac 2 -i "${pcmPath}" "${wavPath}" -y`,
     );
 
-    this.enqueue(async () => {
-      console.log(this.queue);
-      const args = ["-m", this.modelPath, "-f", wavPath, "-l", "pl"];
-      const p = spawn(this.whisperPath, args);
+    console.log("Przemowa");
+    console.log(this.queue);
 
-      p.stdout.on("data", (data) => {
-        console.log(data.toString());
-        const text = data.toString();
-        onSlur(text);
-      });
+    this.enqueue(
+      () =>
+        new Promise<void>((resolve) => {
+          const args = ["-m", this.modelPath, "-f", wavPath, "-l", "pl"];
+          const p = spawn(this.whisperPath, args);
 
-      p.on("close", (code) => {
-        console.log("Whisper exited with code", code);
-        deleteFile(pcmPath);
-        deleteFile(wavPath);
-      });
-    });
+          p.stdout.on("data", (data) => {
+            const text = data.toString();
+            console.log(text);
+            onSlur(text);
+          });
+
+          p.on("close", (code) => {
+            console.log("Whisper exited with code", code);
+            deleteFile(pcmPath);
+            deleteFile(wavPath);
+            resolve();
+          });
+        }),
+    );
   }
 
   private enqueue(task: () => Promise<void>) {
@@ -63,11 +69,13 @@ export class WhisperBridge {
     if (!task) return;
 
     try {
+      console.error("Whisper task start");
       await task();
     } catch (err) {
       console.error("Whisper task error:", err);
     } finally {
       this.isProcessing = false;
+      console.error("Whisper task done");
       this.processQueue();
     }
   }
