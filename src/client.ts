@@ -145,6 +145,7 @@ export class DiscordAdapter {
           (filename: string) => {
             fs.rm(filename);
           },
+          this.onVoiceSlur,
         );
         console.log(result);
       } catch (e) {
@@ -216,6 +217,30 @@ export class DiscordAdapter {
         ],
       });
     }
+  };
+
+  public onVoiceSlur = async (text: string) => {
+    if (!(await this.testContentForSlurs(text))) {
+      console.log("MSG INVALID");
+      return;
+    }
+
+    const guildId = process.env.FBI_ID;
+    const targetUserId = process.env.CZECHOPOLAK_ID;
+    const generalChannelId = process.env.GENERAL_CHANNEL_ID ?? "";
+
+    const channel = await this._client.channels.fetch(generalChannelId);
+
+    if (!channel?.isSendable()) {
+      return;
+    }
+
+    channel.send({
+      embeds: [
+        this.createErrorEmbed(`❌ Chomik bluzga po raz kolejny`),
+        this.createContentEmbed(`powiedział:  ${text}`),
+      ],
+    });
   };
 
   private testContentForSlurs = async (text: string): Promise<boolean> => {

@@ -4,6 +4,7 @@ import * as path from "node:path";
 export async function transcribePcm(
   pcmPath: string,
   deleteFile: (f: string) => void,
+  onSlur: (t: string) => void,
 ): Promise<string> {
   const isWindows = process.platform === "win32";
 
@@ -20,7 +21,10 @@ export async function transcribePcm(
   });
 
   const p = spawn(whisperPath, ["-m", modelPath, "-f", wavPath, "-l", "pl"]);
-  p.stdout.on("data", (data) => console.log("OUT:", data.toString()));
+  p.stdout.on("data", (data) => {
+    console.log(data.toString());
+    onSlur(data.toString());
+  });
   // p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
   p.on("close", (code) => {
     console.log("Whisper exited with code", code);
