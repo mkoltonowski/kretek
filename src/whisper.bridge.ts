@@ -32,10 +32,12 @@ export class WhisperBridge {
     );
 
     this.enqueue(async () => {
+      console.log(this.queue);
       const args = ["-m", this.modelPath, "-f", wavPath, "-l", "pl"];
       const p = spawn(this.whisperPath, args);
 
       p.stdout.on("data", (data) => {
+        console.log(data.toString());
         const text = data.toString();
         onSlur(text);
       });
