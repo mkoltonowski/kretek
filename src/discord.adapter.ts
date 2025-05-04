@@ -30,7 +30,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import * as path from "node:path";
-import { transcribePcm } from "./util/transcribePcm";
+import { WhisperBridge } from "./whisper.bridge";
 
 export class DiscordAdapter {
   private _client: Client;
@@ -39,6 +39,7 @@ export class DiscordAdapter {
   private receiverListening: boolean = false;
   private nicoUID: string;
   private streams: Map<string, AudioReceiveStream> = new Map();
+  private whisperBridge = new WhisperBridge();
 
   constructor(private token?: string) {
     this.config = {
@@ -140,7 +141,7 @@ export class DiscordAdapter {
       out.end();
       await fs.copyFile(filename, processFilename);
       try {
-        const result = await transcribePcm(
+        const result = await this.whisperBridge.transcribe(
           processFilename,
           (filename: string) => {
             fs.rm(filename);
