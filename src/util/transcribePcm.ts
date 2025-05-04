@@ -13,7 +13,7 @@ export async function transcribePcm(
     `./lib/whisper.cpp/build/bin/whisper-cli${isWindows ? ".exe" : ""}`,
   );
 
-  const modelPath = path.resolve("./lib/whisper.cpp/models/ggml-base.bin");
+  const modelPath = path.resolve("./lib/whisper.cpp/models/ggml-medium.bin");
 
   await new Promise<void>((resolve, reject) => {
     const cmd = `ffmpeg -f s16le -ar 48000 -ac 2 -i "${pcmPath}" "${wavPath}" -y`;
