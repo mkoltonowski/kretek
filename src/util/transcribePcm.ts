@@ -8,7 +8,7 @@ export async function transcribePcm(pcmPath: string): Promise<string> {
   const whisperPath = path.resolve(
     `./lib/whisper.cpp/build/bin/main${isWindows ? ".exe" : ""}`,
   );
-  console.log(`${whisperPath}`);
+
   const modelPath = path.resolve("./lib/whisper.cpp/models/ggml-base.bin");
 
   await new Promise<void>((resolve, reject) => {
@@ -20,6 +20,8 @@ export async function transcribePcm(pcmPath: string): Promise<string> {
     const cmd = `"${whisperPath}" -m "${modelPath}" -f "${wavPath}" -l pl`;
     exec(cmd, (err, stdout, stderr) => {
       if (err) return reject(stderr);
+      console.log(cmd);
+      console.log(stdout);
       resolve(stdout);
     });
   });
