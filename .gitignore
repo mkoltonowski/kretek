@@ -1,6 +1,5 @@
 /tmp
 /out-tsc
-
 /node_modules
 npm-debug.log*
 yarn-debug.log*
@@ -10,3 +9,8 @@ yarn-error.log*
 .env*
 .vscode/*
 .idea/*
+dist
+data/**/*.pcm
+data/**/*.wav
+lib/whisper.cpp/*
+/whisper.cpp/

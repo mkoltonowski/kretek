@@ -1,3 +1,4 @@
+// @ts-ignore
 import dotenv from "dotenv";
 import express from 'express'
 import {DiscordAdapter} from "./client";
@@ -11,11 +12,13 @@ const main = async () => {
     await discordAdapter.login()
 
     const channels = await discordAdapter.getChannels(process.env.FBI_ID);
+    // @ts-ignore
     const mapped = channels?.map((guild) => ({ name: guild?.name, id: guild?.id }));
     console.log(mapped);
 
     app.use(express.json());
 
+    // @ts-ignore
     app.get('/user', async (req, res) => {
         const user = await discordAdapter.getUsers()
         res.send({ users: user})
