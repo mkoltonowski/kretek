@@ -29,13 +29,15 @@ export class DiscordAdapter {
   private receiverListening: boolean = false;
   private nicoUID: string;
   private streams: Map<string, AudioReceiveStream> = new Map();
-  private whisperBridge = new WhisperBridge();
+  private whisperBridge;
 
   constructor(private token?: string) {
     this.config = {
       CLIENT_ID: process.env.CLIENT_ID,
       CLIENT_TOKEN: this.token,
     };
+
+    this.whisperBridge = new WhisperBridge(process.env.MODEL ?? "base");
 
     this.nicoUID = process.env.CZECHOPOLAK_ID ?? "";
 
@@ -100,7 +102,7 @@ export class DiscordAdapter {
     );
   };
 
-  private onUserSpeak = (uid: string, receiver: VoiceReceiver) => {
+  private onUserSpeak = async (uid: string, receiver: VoiceReceiver) => {
     if (this.streams.has(uid)) {
       return;
     }
@@ -136,7 +138,8 @@ export class DiscordAdapter {
           (filename: string) => {
             fs.rm(filename);
           },
-          this.onVoiceSlur,
+          (text) => this.onVoiceSlur(uid, text),
+          (text) => this.onLog(uid, text),
         );
       } catch (e) {
         console.error(e);
@@ -180,12 +183,10 @@ export class DiscordAdapter {
 
   public onSlur = async (msg: OmitPartialGroupDMChannel<Message<boolean>>) => {
     if (!(await this.testContentForSlurs(msg.content))) {
-      console.log("MSG INVALID");
       return;
     }
 
     if (msg.author.bot) {
-      console.log("INVALID USER");
       return;
     }
 
@@ -208,7 +209,7 @@ export class DiscordAdapter {
     }
   };
 
-  public onVoiceSlur = async (text: string) => {
+  public onVoiceSlur = async (user: string, text: string) => {
     if (!(await this.testContentForSlurs(text))) {
       return;
     }
@@ -226,8 +227,26 @@ export class DiscordAdapter {
     channel.send({
       embeds: [
         this.createErrorEmbed(`❌ Chomik bluzga po raz kolejny`),
-        this.createContentEmbed(`powiedział:  ${text}`),
+        this.createContentEmbed(`<@${user}> powiedział:  ${text}`),
       ],
+    });
+  };
+
+  public onLog = async (user: string, text: string) => {
+    if (!text || text.replace(/\s+/g, "") == "") {
+      return;
+    }
+
+    const generalChannelId = process.env.LOG_CHANNEL_ID ?? "";
+
+    const channel = await this._client.channels.fetch(generalChannelId);
+
+    if (!channel?.isSendable()) {
+      return;
+    }
+
+    channel.send({
+      embeds: [this.createContentEmbed(`<@${user}> powiedział:  ${text}`)],
     });
   };
 
