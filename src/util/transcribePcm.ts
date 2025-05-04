@@ -25,7 +25,7 @@ export async function transcribePcm(
     console.log(data.toString());
     onSlur(data.toString());
   });
-  // p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
+  p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
   p.on("close", (code) => {
     console.log("Whisper exited with code", code);
     deleteFile(pcmPath);
