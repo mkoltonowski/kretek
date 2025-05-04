@@ -82,7 +82,7 @@ export class DiscordAdapter {
     oldState: VoiceState,
     newState: VoiceState,
   ) => {
-    if (!newState.channelId) {
+    if (oldState.channelId || !newState.channelId) {
       return;
     }
 
