@@ -140,7 +140,12 @@ export class DiscordAdapter {
       out.end();
       await fs.copyFile(filename, processFilename);
       try {
-        const result = await transcribePcm(processFilename);
+        const result = await transcribePcm(
+          processFilename,
+          (filename: string) => {
+            fs.rm(filename);
+          },
+        );
         console.log(result);
       } catch (e) {
         console.error(e);
