@@ -1,4 +1,4 @@
-import { exec } from "node:child_process";
+import { exec, spawn } from "node:child_process";
 import * as path from "node:path";
 
 export async function transcribePcm(pcmPath: string): Promise<string> {
@@ -6,7 +6,7 @@ export async function transcribePcm(pcmPath: string): Promise<string> {
 
   const wavPath = pcmPath.replace(".pcm", ".wav");
   const whisperPath = path.resolve(
-    `./lib/whisper.cpp/build/bin/main${isWindows ? ".exe" : ""}`,
+    `./lib/whisper.cpp/build/bin/whisper-cli${isWindows ? ".exe" : ""}`,
   );
 
   const modelPath = path.resolve("./lib/whisper.cpp/models/ggml-base.bin");
@@ -16,13 +16,9 @@ export async function transcribePcm(pcmPath: string): Promise<string> {
     exec(cmd, (err) => (err ? reject(err) : resolve()));
   });
 
-  return new Promise<string>((resolve, reject) => {
-    const cmd = `"${whisperPath}" -m "${modelPath}" -f "${wavPath}" -l pl`;
-    exec(cmd, (err, stdout, stderr) => {
-      if (err) return reject(stderr);
-      console.log(cmd);
-      console.log(stdout);
-      resolve(stdout);
-    });
-  });
+  const p = spawn(whisperPath, ["-m", modelPath, "-f", wavPath, "-l", "pl"]);
+  p.stdout.on("data", (data) => console.log("OUT:", data.toString()));
+  p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
+  p.on("close", (code) => console.log("Whisper exited with code", code));
+  return whisperPath;
 }
