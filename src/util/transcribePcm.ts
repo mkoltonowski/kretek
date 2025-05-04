@@ -2,8 +2,12 @@ import { exec } from "node:child_process";
 import * as path from "node:path";
 
 export async function transcribePcm(pcmPath: string): Promise<string> {
+  const isWindows = process.platform === "win32";
+
   const wavPath = pcmPath.replace(".pcm", ".wav");
-  const whisperPath = path.resolve("./lib/whisper.cpp/build/bin/main.exe");
+  const whisperPath = path.resolve(
+    `./lib/whisper.cpp/build/bin/main${isWindows ? ".exe" : ""}`,
+  );
   console.log(`${whisperPath}`);
   const modelPath = path.resolve("./lib/whisper.cpp/models/ggml-base.bin");
 
