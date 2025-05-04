@@ -1,6 +1,9 @@
 import { exec, spawn } from "node:child_process";
 import * as path from "node:path";
 
+const queue: (() => Promise<void>)[] = [];
+let isProcessing = false;
+
 export async function transcribePcm(
   pcmPath: string,
   deleteFile: (f: string) => void,
@@ -20,16 +23,42 @@ export async function transcribePcm(
     exec(cmd, (err) => (err ? reject(err) : resolve()));
   });
 
-  const p = spawn(whisperPath, ["-m", modelPath, "-f", wavPath, "-l", "pl"]);
-  p.stdout.on("data", (data) => {
-    console.log(data.toString());
-    onSlur(data.toString());
+  enqueueWhisper(async () => {
+    const p = spawn(whisperPath, ["-m", modelPath, "-f", wavPath, "-l", "pl"]);
+    p.stdout.on("data", (data) => {
+      console.log(data.toString());
+      onSlur(data.toString());
+    });
+    // p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
+    p.on("close", (code) => {
+      console.log("Whisper exited with code", code);
+      deleteFile(pcmPath);
+      deleteFile(wavPath);
+    });
   });
-  // p.stderr.on("data", (data) => console.error("ERR:", data.toString()));
-  p.on("close", (code) => {
-    console.log("Whisper exited with code", code);
-    deleteFile(pcmPath);
-    deleteFile(wavPath);
-  });
+
+  console.log(queue);
   return whisperPath;
+}
+
+function enqueueWhisper(task: () => Promise<void>) {
+  queue.push(task);
+  processQueue();
+}
+
+async function processQueue() {
+  if (isProcessing || queue.length === 0) return;
+
+  isProcessing = true;
+  const nextTask = queue.shift();
+  if (!nextTask) return;
+
+  try {
+    await nextTask();
+  } catch (err) {
+    console.error("Whisper task error:", err);
+  } finally {
+    isProcessing = false;
+    processQueue(); // uruchom kolejny
+  }
 }
