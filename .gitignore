@@ -12,6 +12,4 @@ yarn-error.log*
 dist
 data/**/*.pcm
 data/**/*.wav
-lib/whisper.cpp/*
-/whisper.cpp/
-/lib/whisper.cpp/
+lib/**/*
