@@ -49,11 +49,6 @@ export class WhisperBridge {
             onLog(text);
           });
 
-          p.stderr.on("data", (data) => {
-            const text = data.toString();
-            console.error(text);
-          });
-
           p.on("close", (code) => {
             console.log("Whisper exited with code", code);
             deleteFile(pcmPath);
