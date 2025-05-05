@@ -149,10 +149,25 @@ export class DiscordAdapter {
     });
   };
 
+  private onUserLeft = (oldState: VoiceState, newState: VoiceState) => {
+    const uid = oldState.member?.user.id;
+
+    if (!uid) {
+      return;
+    }
+
+    this.streams.delete(uid);
+    console.log(
+      `${oldState?.member?.user.tag} wyszedł z ${oldState.channel?.name}`,
+    );
+  };
+
   public onChannelLeft = (oldState: VoiceState, newState: VoiceState) => {
     if (!oldState.channelId || newState.channelId) {
       return;
     }
+
+    this.onUserLeft(oldState, newState);
 
     if (oldState?.channel?.members.size !== 1) {
       return;
@@ -168,10 +183,9 @@ export class DiscordAdapter {
 
     this.connection.destroy();
     this.connection = null;
+    this.streams.clear();
 
-    console.log(
-      `${oldState?.member?.user.tag} wyszedł z ${oldState.channel?.name}`,
-    );
+    console.log(`Wszyscy wyszli z ${oldState.channel?.name}`);
   };
 
   public joinVoice = (channel: VoiceBasedChannel) =>
