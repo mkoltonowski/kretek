@@ -44,7 +44,7 @@ export class WhisperBridge {
 
           p.stdout.on("data", (data) => {
             const text = data.toString();
-            console.log(text);
+            console.timeLog("Whisper", text);
             onSlur(text);
             onLog(text);
           });
@@ -72,13 +72,13 @@ export class WhisperBridge {
     if (!task) return;
 
     try {
-      console.error("Whisper task start");
+      console.time("Whisper");
       await task();
     } catch (err) {
       console.error("Whisper task error:", err);
     } finally {
       this.isProcessing = false;
-      console.error("Whisper task done");
+      console.timeEnd("Whisper");
       this.processQueue();
     }
   }
