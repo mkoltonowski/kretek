@@ -184,6 +184,7 @@ export class DiscordAdapter {
     this.connection.destroy();
     this.connection = null;
     this.streams.clear();
+    this.receiverListening = false;
 
     console.log(`Wszyscy wyszli z ${oldState.channel?.name}`);
   };
